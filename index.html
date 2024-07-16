@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>献立　ルーレット決めサイト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px ;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ffffff;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #87cefa;
+        }
+    </style>
+</head>
+<body>
+    <h2 align = 'center'>献立　ルーレット決めサイト</h2>
+
+    <form id="insert-form">
+        <label for="name">料理名:</label>
+        <input type="text" id="name" name="name">
+        <button type="submit">挿入</button>
+    </form>
+
+    <button id="reset-btn">リセット</button>
+    <button id="roulette-btn">ルーレット</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>料理名</th>
+            </tr>
+        </thead>
+        <tbody id="food-table-body">
+            <!-- ここにGoから取得したデータが挿入されます -->
+        </tbody>
+    </table>
+
+    <script>
+        // フォーム送信時の処理
+        document.getElementById('insert-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // デフォルトの送信動作をキャンセル
+
+            const formData = new FormData(this);
+            fetch('/insert', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // テーブルを更新する
+                const tableBody = document.getElementById('food-table-body');
+                tableBody.innerHTML = ''; // テーブルをクリア
+
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${row.id}</td><td>${row.name}</td>`;
+                    tableBody.appendChild(tr);
+                });
+            })
+            .catch(error => console.error('データの挿入に失敗しました:', error));
+
+            // 入力フォームをクリアする
+            this.reset();
+        });
+
+        // リセットボタンのクリックイベント
+        document.getElementById('reset-btn').addEventListener('click', function(event) {
+            fetch('/reset', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                // テーブルをクリアする
+                const tableBody = document.getElementById('food-table-body');
+                tableBody.innerHTML = ''; // テーブルをクリア
+            })
+            .catch(error => console.error('データのリセットに失敗しました:', error));
+        });
+
+        // ルーレットボタンのクリックイベント
+        document.getElementById('roulette-btn').addEventListener('click', function(event) {
+            fetch('/roulette')
+            .then(response => response.json())
+            .then(data => {
+                // テーブルを更新する
+                const tableBody = document.getElementById('food-table-body');
+                tableBody.innerHTML = ''; // テーブルをクリア
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>1</td><td>${data.name}</td>`;
+                tableBody.appendChild(tr);
+            })
+            .catch(error => console.error('ランダムな名前の取得に失敗しました:', error));
+        });
+    </script>
+</body>
+</html>
